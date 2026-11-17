@@ -8,40 +8,49 @@ import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doOnTextChanged
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.chogo.lostandfound.databinding.ActivityViewItemsBinding
+import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.appbar.MaterialToolbar
+import com.google.android.material.textfield.TextInputEditText
 
 class ViewItemsActivity : AppCompatActivity() {
 
-    private lateinit var binding: ActivityViewItemsBinding
     private lateinit var adapter: ItemAdapter
+
+    private val toolbar by lazy { findViewById<MaterialToolbar>(R.id.toolbar) }
+    private val etSearch by lazy { findViewById<TextInputEditText>(R.id.etSearch) }
+    private val spCategory by lazy { findViewById<Spinner>(R.id.spCategory) }
+    private val spStatus by lazy { findViewById<Spinner>(R.id.spStatus) }
+    private val tvCount by lazy { findViewById<TextView>(R.id.tvCount) }
+    private val tvEmpty by lazy { findViewById<TextView>(R.id.tvEmpty) }
+    private val recyclerView by lazy { findViewById<RecyclerView>(R.id.recyclerView) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        binding = ActivityViewItemsBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-        binding.root.applySystemBarPadding()
-
+        setContentView(R.layout.activity_view_items)
+        applySystemBarPadding()
         ItemRepository.init(applicationContext)
-        binding.toolbar.setNavigationOnClickListener { finish() }
+
+        toolbar.setNavigationOnClickListener { finish() }
 
         // 1. RecyclerView must be ready first
         adapter = ItemAdapter { item -> showDetails(item) }
-        binding.recyclerView.layoutManager = LinearLayoutManager(this)
-        binding.recyclerView.adapter = adapter
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        recyclerView.adapter = adapter
 
         // 2. Filter spinners
-        setupSpinner(binding.spCategory, listOf(Categories.ALL) + Categories.list)
-        setupSpinner(binding.spStatus, listOf(Categories.ALL, "Lost", "Found"))
+        setupSpinner(spCategory, listOf(Categories.ALL) + Categories.list)
+        setupSpinner(spStatus, listOf(Categories.ALL, "Lost", "Found"))
 
         // 3. Search box
-        binding.etSearch.doOnTextChanged { _, _, _, _ -> applyFilters() }
+        etSearch.doOnTextChanged { _, _, _, _ -> applyFilters() }
     }
 
     override fun onResume() {
@@ -63,14 +72,13 @@ class ViewItemsActivity : AppCompatActivity() {
     }
 
     private fun applyFilters() {
-        val query = binding.etSearch.text.toString().trim()
-        val category = binding.spCategory.selectedItem?.toString() ?: Categories.ALL
-        val status = binding.spStatus.selectedItem?.toString() ?: Categories.ALL
-
+        val query = etSearch.text.toString().trim()
+        val category = spCategory.selectedItem?.toString() ?: Categories.ALL
+        val status = spStatus.selectedItem?.toString() ?: Categories.ALL
         val results = ItemRepository.search(query, category, status)
         adapter.submitList(results)
-        binding.tvCount.text = "${results.size} item(s)"
-        binding.tvEmpty.visibility = if (results.isEmpty()) View.VISIBLE else View.GONE
+        tvCount.text = "${results.size} item(s)"
+        tvEmpty.visibility = if (results.isEmpty()) View.VISIBLE else View.GONE
     }
 
     private fun showDetails(item: Item) {
@@ -93,7 +101,6 @@ class ViewItemsActivity : AppCompatActivity() {
                 clipboard.setPrimaryClip(ClipData.newPlainText("Contact", item.contact))
                 Toast.makeText(this, "Contact copied", Toast.LENGTH_SHORT).show()
             }
-
         if (!item.claimed) {
             builder.setPositiveButton("Mark as Claimed/Returned") { _, _ -> confirmClaim(item) }
         }
@@ -107,7 +114,8 @@ class ViewItemsActivity : AppCompatActivity() {
             .setPositiveButton("Yes") { _, _ ->
                 ItemRepository.markClaimed(item.id)
                 applyFilters()
-                Toast.makeText(this, "Item marked as claimed / returned", Toast.LENGTH_SHORT).show()
+                val message = "Item marked as claimed / returned"
+                Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
             }
             .setNegativeButton("Cancel", null)
             .show()
