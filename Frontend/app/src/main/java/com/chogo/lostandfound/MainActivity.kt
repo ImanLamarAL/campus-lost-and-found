@@ -2,26 +2,22 @@ package com.chogo.lostandfound
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
+import android.widget.Button
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import com.chogo.lostandfound.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
-
-    private lateinit var binding: ActivityMainBinding
-
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-        binding.root.applySystemBarPadding()
-
+        setContentView(R.layout.activity_main)
+        findViewById<View>(android.R.id.content).applySystemBarPadding()
         ItemRepository.init(applicationContext)
 
-        binding.btnReportLost.setOnClickListener { openReport(ItemType.LOST) }
-        binding.btnReportFound.setOnClickListener { openReport(ItemType.FOUND) }
-        binding.btnViewItems.setOnClickListener {
+        findViewById<Button>(R.id.btnReportLost).setOnClickListener { openReport(ItemType.LOST) }
+        findViewById<Button>(R.id.btnReportFound).setOnClickListener { openReport(ItemType.FOUND) }
+        findViewById<Button>(R.id.btnViewItems).setOnClickListener {
             startActivity(Intent(this, ViewItemsActivity::class.java))
         }
     }
