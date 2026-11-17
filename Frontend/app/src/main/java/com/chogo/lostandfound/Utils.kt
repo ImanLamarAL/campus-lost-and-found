@@ -1,12 +1,13 @@
 package com.chogo.lostandfound
 
 import android.view.View
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 
-/** Keeps the screen content clear of the status bar, navigation bar and keyboard. */
-fun View.applySystemBarPadding() {
-    ViewCompat.setOnApplyWindowInsetsListener(this) { v, insets ->
+fun AppCompatActivity.applySystemBarPadding() {
+    val content = findViewById<View>(android.R.id.content)
+    ViewCompat.setOnApplyWindowInsetsListener(content) { v, insets ->
         val bars = insets.getInsets(
             WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime()
         )

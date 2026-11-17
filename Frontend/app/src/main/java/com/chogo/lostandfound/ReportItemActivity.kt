@@ -3,12 +3,16 @@ package com.chogo.lostandfound
 import android.app.DatePickerDialog
 import android.os.Bundle
 import android.widget.ArrayAdapter
+import android.widget.Button
+import android.widget.Spinner
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import com.chogo.lostandfound.databinding.ActivityReportItemBinding
+import com.google.android.material.appbar.MaterialToolbar
+import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import java.util.Calendar
 import java.util.Locale
@@ -19,40 +23,52 @@ class ReportItemActivity : AppCompatActivity() {
         const val EXTRA_TYPE = "extra_type"
     }
 
-    private lateinit var binding: ActivityReportItemBinding
     private lateinit var type: ItemType
+
+    private val toolbar by lazy { findViewById<MaterialToolbar>(R.id.toolbar) }
+    private val tvTypeBanner by lazy { findViewById<TextView>(R.id.tvTypeBanner) }
+    private val tilName by lazy { findViewById<TextInputLayout>(R.id.tilName) }
+    private val tilDescription by lazy { findViewById<TextInputLayout>(R.id.tilDescription) }
+    private val tilLocation by lazy { findViewById<TextInputLayout>(R.id.tilLocation) }
+    private val tilDate by lazy { findViewById<TextInputLayout>(R.id.tilDate) }
+    private val tilContact by lazy { findViewById<TextInputLayout>(R.id.tilContact) }
+    private val etName by lazy { findViewById<TextInputEditText>(R.id.etName) }
+    private val etDescription by lazy { findViewById<TextInputEditText>(R.id.etDescription) }
+    private val etLocation by lazy { findViewById<TextInputEditText>(R.id.etLocation) }
+    private val etDate by lazy { findViewById<TextInputEditText>(R.id.etDate) }
+    private val etContact by lazy { findViewById<TextInputEditText>(R.id.etContact) }
+    private val spCategory by lazy { findViewById<Spinner>(R.id.spCategory) }
+    private val btnSubmit by lazy { findViewById<Button>(R.id.btnSubmit) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        binding = ActivityReportItemBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-        binding.root.applySystemBarPadding()
-
+        setContentView(R.layout.activity_report_item)
+        applySystemBarPadding()
         ItemRepository.init(applicationContext)
+
         type = ItemType.fromName(intent.getStringExtra(EXTRA_TYPE))
 
         setupHeader()
         setupCategorySpinner()
 
-        binding.toolbar.setNavigationOnClickListener { finish() }
-        binding.etDate.setOnClickListener { showDatePicker() }
-        binding.btnSubmit.setOnClickListener {
+        toolbar.setNavigationOnClickListener { finish() }
+        etDate.setOnClickListener { showDatePicker() }
+        btnSubmit.setOnClickListener {
             if (validate()) confirmSubmit()
         }
     }
 
     private fun setupHeader() {
         val isLost = type == ItemType.LOST
-        binding.toolbar.title = if (isLost) "Report Lost Item" else "Report Found Item"
-        binding.tvTypeBanner.text =
+        toolbar.title = if (isLost) "Report Lost Item" else "Report Found Item"
+        tvTypeBanner.text =
             if (isLost) "You are reporting a LOST item" else "You are reporting a FOUND item"
-        binding.tvTypeBanner.setBackgroundColor(
+        tvTypeBanner.setBackgroundColor(
             ContextCompat.getColor(this, if (isLost) R.color.lost else R.color.found)
         )
-        binding.tilLocation.hint =
-            if (isLost) "Where did you lose it?" else "Where did you find it?"
-        binding.tilDate.hint = if (isLost) "Date lost" else "Date found"
+        tilLocation.hint = if (isLost) "Where did you lose it?" else "Where did you find it?"
+        tilDate.hint = if (isLost) "Date lost" else "Date found"
     }
 
     private fun setupCategorySpinner() {
@@ -62,7 +78,7 @@ class ReportItemActivity : AppCompatActivity() {
             Categories.list
         )
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.spCategory.adapter = adapter
+        spCategory.adapter = adapter
     }
 
     private fun showDatePicker() {
@@ -70,10 +86,10 @@ class ReportItemActivity : AppCompatActivity() {
         val dialog = DatePickerDialog(
             this,
             { _, year, month, day ->
-                binding.etDate.setText(
+                etDate.setText(
                     String.format(Locale.getDefault(), "%02d/%02d/%04d", day, month + 1, year)
                 )
-                binding.tilDate.error = null
+                tilDate.error = null
             },
             cal.get(Calendar.YEAR),
             cal.get(Calendar.MONTH),
@@ -89,11 +105,21 @@ class ReportItemActivity : AppCompatActivity() {
     }
 
     private fun validate(): Boolean {
-        val nameOk = checkField(binding.tilName, binding.etName.text.toString(), "Item name is required")
-        val descOk = checkField(binding.tilDescription, binding.etDescription.text.toString(), "Description is required")
-        val locOk = checkField(binding.tilLocation, binding.etLocation.text.toString(), "Location is required")
-        val dateOk = checkField(binding.tilDate, binding.etDate.text.toString(), "Please pick a date")
-        val contactOk = checkField(binding.tilContact, binding.etContact.text.toString(), "Contact information is required")
+        val nameOk = checkField(
+            tilName, etName.text.toString(), "Item name is required"
+        )
+        val descOk = checkField(
+            tilDescription, etDescription.text.toString(), "Description is required"
+        )
+        val locOk = checkField(
+            tilLocation, etLocation.text.toString(), "Location is required"
+        )
+        val dateOk = checkField(
+            tilDate, etDate.text.toString(), "Please pick a date"
+        )
+        val contactOk = checkField(
+            tilContact, etContact.text.toString(), "Contact information is required"
+        )
         return nameOk && descOk && locOk && dateOk && contactOk
     }
 
@@ -109,16 +135,17 @@ class ReportItemActivity : AppCompatActivity() {
     private fun saveItem() {
         val item = Item(
             id = System.currentTimeMillis(),
-            name = binding.etName.text.toString().trim(),
-            description = binding.etDescription.text.toString().trim(),
-            location = binding.etLocation.text.toString().trim(),
-            date = binding.etDate.text.toString().trim(),
-            contact = binding.etContact.text.toString().trim(),
-            category = binding.spCategory.selectedItem.toString(),
+            name = etName.text.toString().trim(),
+            description = etDescription.text.toString().trim(),
+            location = etLocation.text.toString().trim(),
+            date = etDate.text.toString().trim(),
+            contact = etContact.text.toString().trim(),
+            category = spCategory.selectedItem.toString(),
             type = type
         )
         ItemRepository.add(item)
-        Toast.makeText(this, "${type.label} item reported successfully!", Toast.LENGTH_LONG).show()
+        val message = "${type.label} item reported successfully!"
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
         finish()
     }
 }

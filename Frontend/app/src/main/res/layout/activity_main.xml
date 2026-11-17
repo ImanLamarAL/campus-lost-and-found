@@ -34,7 +34,7 @@
             android:layout_marginTop="8dp"
             android:layout_marginBottom="40dp"
             android:gravity="center"
-            android:text="Welcome! Lost something on campus, or found something that belongs to someone else? Report it here and help it find its way home."
+            android:text="Report a lost or found item and help it find its way home."
             android:textColor="@color/text_secondary"
             android:textSize="16sp" />
 

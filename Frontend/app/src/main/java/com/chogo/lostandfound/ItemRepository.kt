@@ -6,20 +6,13 @@ import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 
-/**
- * Single place where all reported items live.
- * Items are kept in memory and saved to SharedPreferences (simple local storage)
- * so they are still there after the app is closed.
- */
 object ItemRepository {
-
     private const val PREFS_NAME = "lost_found_prefs"
     private const val KEY_ITEMS = "items"
 
     private val items = mutableListOf<Item>()
     private var prefs: SharedPreferences? = null
 
-    /** Safe to call many times; only loads once. */
     fun init(context: Context) {
         if (prefs != null) return
         prefs = context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -27,7 +20,7 @@ object ItemRepository {
     }
 
     fun add(item: Item) {
-        items.add(0, item) // newest first
+        items.add(0, item)
         save()
     }
 
@@ -36,7 +29,6 @@ object ItemRepository {
         save()
     }
 
-    /** Search by name, then filter by category and status. Pass Categories.ALL to skip a filter. */
     fun search(query: String, category: String, status: String): List<Item> =
         items.filter { item ->
             (query.isBlank() || item.name.contains(query, ignoreCase = true)) &&

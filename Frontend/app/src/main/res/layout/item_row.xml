@@ -96,5 +96,6 @@
             android:textSize="13sp"
             android:textStyle="bold"
             android:visibility="gone" />
+
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>
